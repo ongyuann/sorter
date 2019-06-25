@@ -23,22 +23,18 @@ with open(filename,'r') as document:
         line = document.readline()
         while line != "":
             line = line.strip()
-            if not re.search('"Windows Compliance Checks',line):
-                if re.search('"',line):
-                    #line = document.readline()
-                    #continue
-                    pass
-                else:
-                    #print (line)
-                    write(line)
-            else: #re.search('"Windows Compliance Checks',line):
-                line = line[1:]
+            line = line.replace('"','')
+            if re.search('Nessus',line):
+                write(line)
+            elif re.search('Windows Compliance Checks',line):
+                #line = line[1:]
                 header = line
                 line = document.readline()
-                line = line.strip()
+                line = line.strip().replace('"','')
                 text = header+" "+line
                 #print(text)
                 write(text)
+                continue
             line = document.readline()
         pass
 #print ('it is done. check '+output)
