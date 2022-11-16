@@ -15,6 +15,16 @@ def printlistvertical(res):
         print("%d: %s" % (i,res[i]))
     pass
 
+def writetofile(res,filename):
+    with open(filename,'w') as f:
+        for line in res:
+            f.write(line)
+            f.write("\n")
+    f.close()
+    print("[+] %s written" % filename)
+    pass
+
+
 def process(res):
     res_list = res.split("\n")
 
@@ -49,50 +59,91 @@ def process(res):
     failed_titles = []
     failed_solutions = []
     failed_failed = []
+    failed_rationale = []
+    failed_synopses = []
     #'''
     for i in range(len(res_list)):
         res_list_i = res_list[i]
         #tmp_chunk = []
         if "Unix Compliance Checks" in res_list_i:
             if "pluginFamily" in res_list_i:
-                tmp_chunk = res_list[i:i+66]
+                tmp_chunk = res_list[i:i+53] #53
                 failed_chunk = []
                 for i in tmp_chunk:
                     if "result" in i:
                         if "FAILED" in i:
                             failed_chunk = tmp_chunk
-                for i in failed_chunk:
-                    #print("[+] ###########################")
-                    if "result" in i:
-                        #print(i)
-                        failed_failed.append(i)
-                        pass
-                    if "solution" in i:
-                        #print(i)
-                        failed_solutions.append(i)
-                        pass
-                    if "compliance-info" in i:
-                        #print(i)
-                        if "informational-id" in i:
+                            #print("[+] ######### chunk start ##################")
+                #printlistvertical(failed_chunk)
+                for i in range(len(failed_chunk)):
+                    #print(i)
+                    if "actual-value" in failed_chunk[i]:
+                        if "</cm:" in failed_chunk[i]:
                             continue
                         else:
-                            failed_descriptions.append(i)
-                        pass
-                    if "compliance-check-name" in i:
+                            infochunk = failed_chunk[i:i+8]
+                            infochunk = " ".join(infochunk)
+                            infochunk = infochunk.split("<cm:compliance-actual-value>")
+                            infochunk = " ".join(infochunk)
+                            infochunk = infochunk.split("</cm:compliance-actual-value>")[0]
+                            infochunk = infochunk.replace("  "," ")
+                            #infochunk = " ".join(infochunk)
+                            #print("[+] %s" % infochunk)
+                            #print("[+] %s" % failed_chunk[i])
+                            failed_synopses.append(infochunk)
+                    if "Rationale" in failed_chunk[i]:
+                        #print(failed_chunk[i:i+3])
+                        failed_rationale.append(failed_chunk[i])
+                    if "result" in failed_chunk[i]:
                         #print(i)
-                        failed_titles.append(i)
+                        failed_failed.append(failed_chunk[i])
                         pass
-                    if "compliance-actual-value" in i:
+                    if "solution" in failed_chunk[i]:
+                        if "</cm" in failed_chunk[i]:
+                            continue
+                        else:
+                            #print("[+] %s" % failed_chunk[i])
+                            failed_solutions.append(failed_chunk[i])
+                        pass
+                    if "compliance-info" in failed_chunk[i]:
+                        if "informational-id" in failed_chunk[i]:
+                            continue
+                        else:
+                            infochunk = failed_chunk[i:i+5]
+                            infochunk = " ".join(infochunk)
+                            infochunk = infochunk.split("<cm:compliance-info>")
+                            infochunk = " ".join(infochunk)
+                            infochunk = infochunk.split("</cm:compliance-info>")[0]
+                            infochunk = infochunk.replace("  "," ")
+                            #infochunk = " ".join(infochunk)
+                            #print("[+] %s" % infochunk)
+                            #print("[+] %s" % failed_chunk[i])
+                            failed_descriptions.append(infochunk)
+                        pass
+                    if "compliance-check-name" in failed_chunk[i]:
+                        #print(i)
+                        infochunk = failed_chunk[i].split("<cm:compliance-check-name>")[1]
+                        failed_titles.append(failed_chunk[i])
+                        pass
+                    if "compliance-actual-value" in failed_chunk[i]:
                         #print(i)
                         pass
+                #print("[+] ######### chunk end ##################")
                 #res_unix_index.append(i)
+    #print(failed_synopses)
+    print("[+] len(failed_synopses): %d" % (len(failed_synopses)))
+    writetofile(failed_synopses,"synopses.txt")
+    #print(failed_rationale)
+    #print("[+] len(failed_rationale): %d" % len(failed_rationale))
     #'''
-    #print(failed_descriptions[0])
+    #print(failed_descriptions)
     print("[+] len(failed_descriptions): %d" % (len(failed_descriptions)))
+    writetofile(failed_descriptions,"descriptions.txt")
     #print(failed_titles)
+    writetofile(failed_titles,"titles.txt")
     print("[+] len(failed_titles): %d" % len(failed_titles))
     print("[+] len(failed_solutions) %d" % len(failed_solutions))
-    print("[+] len(failed_failed) %d" % len(failed_failed))
+    #print("[+] len(failed_failed) %d" % len(failed_failed))
     #print(res_chunk[0])
     '''
     for i in res_chunk[0]:
